@@ -44,7 +44,11 @@ Evaluates a transaction and returns a reward decision.
   "txn_type": "purchase",
   "ts": "2026-03-11T10:00:00Z"
 }
-Response Example
+```
+
+### Response Example
+
+```json
 {
   "decision_id": "724ff8bb-0411-5a63-813b-f028322fbb48",
   "policy_version": "v1",
@@ -59,11 +63,17 @@ Response Example
     "persona_multiplier": 1.5
   }
 }
+```
 
-Swagger documentation:
+### Swagger Documentation
 
-http://localhost:8000/docs
-Project Structure
+- [Swagger UI](http://localhost:8000/docs)
+
+---
+
+## Project Structure
+
+```
 .
 ├── app/
 │   ├── main.py
@@ -87,121 +97,162 @@ Project Structure
 │
 ├── .env
 └── requirements.txt
-Configuration
+```
 
-Reward rules are defined in:
+---
 
-config/policy.yaml
+## Configuration
+
+### Policy Configuration
+
+Reward rules are defined in `config/policy.yaml`
 
 This configuration controls:
 
-XP calculation rules
+- XP calculation rules
+- reward type weights
+- persona multipliers
+- daily CAC caps
+- cooldown rules
+- idempotency TTL
 
-reward type weights
+### Persona Configuration
 
-persona multipliers
+Persona mapping is defined in `config/personas.json`
 
-daily CAC caps
+---
 
-cooldown rules
+## Setup Instructions
 
-idempotency TTL
+### 1. Clone the Repository
 
-Persona mapping is defined in:
-
-config/personas.json
-Setup Instructions
-1. Clone the repository
+```bash
 git clone <repository-url>
 cd reward_service
-2. Create virtual environment
+```
 
-Windows
+### 2. Create Virtual Environment
 
+**Windows**
+
+```bash
 python -m venv venv
 venv\Scripts\activate
+```
 
-Linux / Mac
+**Linux / Mac**
 
+```bash
 python -m venv venv
 source venv/bin/activate
-3. Install dependencies
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-4. Configure environment variables
+```
 
-Create a .env file in the project root:
+### 4. Configure Environment Variables
 
+Create a `.env` file in the project root:
+
+```
 REDIS_ENABLED=false
 REDIS_HOST=localhost
 REDIS_PORT=6379
 POLICY_CONFIG_PATH=config/policy.yaml
 PERSONA_CONFIG_PATH=config/personas.json
-5. Start the API server
+```
+
+### 5. Start the API Server
+
+```bash
 uvicorn app.main:app --reload
+```
 
 Server will run at:
 
-http://localhost:8000
+- [http://localhost:8000](http://localhost:8000)
 
 Swagger UI:
 
-http://localhost:8000/docs
-Redis (Optional)
+- [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## Redis (Optional)
 
 The service supports Redis caching if Redis is available.
 
 Run Redis locally using Docker:
 
+```bash
 docker run -p 6379:6379 redis
+```
 
-Then update .env:
+Then update `.env`:
 
+```
 REDIS_ENABLED=true
+```
 
 If Redis is not available, the service automatically falls back to an in-memory cache.
 
-Idempotency Handling
+---
+
+## Idempotency Handling
 
 Idempotency is enforced using the key:
 
+```
 txn_id + user_id + merchant_id
+```
 
 Repeated requests with the same key return the cached response instead of recalculating the reward decision.
 
-XP Calculation
+---
+
+## XP Calculation
 
 XP is calculated using the following formula:
 
+```
 xp = min(
     amount × xp_per_rupee × persona_multiplier × txn_multiplier,
     max_xp_per_txn
 )
-Daily CAC Cap
+```
+
+---
+
+## Daily CAC Cap
 
 Each persona has a daily CAC cap defined in the policy configuration.
 
 If a monetary reward exceeds the cap, the service automatically returns XP instead of a monetary reward.
 
-Running Tests
+---
+
+## Running Tests
 
 Run unit tests using:
 
+```bash
 pytest -v
+```
 
 Tests cover:
 
-reward decision logic
+- reward decision logic
+- idempotency behavior
+- CAC cap enforcement
 
-idempotency behavior
+---
 
-CAC cap enforcement
+## Assumptions
 
-Assumptions
-
-Persona information is mocked using a local JSON file.
-
-Reward policies are configuration-driven and loaded from YAML.
-
-Redis is optional; in-memory cache is used if Redis is unavailable.
-
-The service acts as a stateless decision engine and does not persist data in a database.
+- Persona information is mocked using a local JSON file.
+- Reward policies are configuration-driven and loaded from YAML.
+- Redis is optional; in-memory cache is used if Redis is unavailable.
+- The service acts as a stateless decision engine and does not persist data in a database.
