@@ -1,37 +1,41 @@
-Reward Decision Service
+# Reward Decision Service
 
-A FastAPI-based microservice that evaluates a transaction and returns a deterministic reward decision. The service demonstrates backend fundamentals such as idempotency handling, configuration-driven logic, caching strategies, and unit testing.
+A FastAPI-based microservice that evaluates a transaction and returns a deterministic reward decision.  
+The service demonstrates backend fundamentals such as idempotency handling, configuration-driven logic, caching strategies, and unit testing.
 
-Overview
+---
 
-This service receives a transaction request and determines what reward should be granted for that transaction. The decision is deterministic and based on configurable business rules defined in a policy file.
+## Overview
 
-The system is designed as a stateless service with a cache-first approach to maintain low latency and prevent duplicate reward issuance.
+This service receives a transaction request and determines what reward should be granted.  
+The decision is deterministic and driven by configurable business rules defined in a policy file.
 
-Key Features
+The system is designed as a stateless service with a cache-first architecture to ensure low latency and prevent duplicate reward issuance.
 
-FastAPI microservice
+---
 
-Deterministic reward decision engine
+## Key Features
 
-Idempotent request handling
+- FastAPI microservice
+- Deterministic reward decision engine
+- Idempotent request handling
+- Config-driven policy evaluation
+- Persona-based reward multipliers
+- Daily CAC cap enforcement
+- Redis cache support with in-memory fallback
+- Unit tests using pytest
 
-Config-driven policy evaluation
+---
 
-Persona-based reward multipliers
+## API Endpoint
 
-Daily CAC cap enforcement
-
-Redis cache with in-memory fallback
-
-Unit tests using pytest
-
-API Endpoint
-POST /reward/decide
+### POST `/reward/decide`
 
 Evaluates a transaction and returns a reward decision.
 
-Request Body
+### Request Body
+
+```json
 {
   "txn_id": "txn_001",
   "user_id": "user_001",
@@ -56,7 +60,7 @@ Response Example
   }
 }
 
-Swagger documentation is available at:
+Swagger documentation:
 
 http://localhost:8000/docs
 Project Structure
@@ -89,7 +93,7 @@ Reward rules are defined in:
 
 config/policy.yaml
 
-This file contains parameters such as:
+This configuration controls:
 
 XP calculation rules
 
@@ -97,9 +101,9 @@ reward type weights
 
 persona multipliers
 
-daily CAC limits
+daily CAC caps
 
-cooldown configuration
+cooldown rules
 
 idempotency TTL
 
@@ -110,14 +114,14 @@ Setup Instructions
 1. Clone the repository
 git clone <repository-url>
 cd reward_service
-2. Create and activate virtual environment
+2. Create virtual environment
 
-Windows:
+Windows
 
 python -m venv venv
 venv\Scripts\activate
 
-Linux / Mac:
+Linux / Mac
 
 python -m venv venv
 source venv/bin/activate
@@ -135,7 +139,7 @@ PERSONA_CONFIG_PATH=config/personas.json
 5. Start the API server
 uvicorn app.main:app --reload
 
-API base URL:
+Server will run at:
 
 http://localhost:8000
 
@@ -146,7 +150,7 @@ Redis (Optional)
 
 The service supports Redis caching if Redis is available.
 
-To run Redis locally using Docker:
+Run Redis locally using Docker:
 
 docker run -p 6379:6379 redis
 
@@ -154,7 +158,7 @@ Then update .env:
 
 REDIS_ENABLED=true
 
-If Redis is not available, the system automatically falls back to an in-memory cache.
+If Redis is not available, the service automatically falls back to an in-memory cache.
 
 Idempotency Handling
 
@@ -162,7 +166,7 @@ Idempotency is enforced using the key:
 
 txn_id + user_id + merchant_id
 
-If the same request is received again, the previously computed response is returned from cache instead of recalculating the reward decision.
+Repeated requests with the same key return the cached response instead of recalculating the reward decision.
 
 XP Calculation
 
@@ -174,15 +178,17 @@ xp = min(
 )
 Daily CAC Cap
 
-Each persona has a daily CAC cap defined in the policy configuration. If a monetary reward would exceed this cap, the system returns an XP reward instead.
+Each persona has a daily CAC cap defined in the policy configuration.
+
+If a monetary reward exceeds the cap, the service automatically returns XP instead of a monetary reward.
 
 Running Tests
 
-Run the unit tests using:
+Run unit tests using:
 
 pytest -v
 
-The tests cover:
+Tests cover:
 
 reward decision logic
 
