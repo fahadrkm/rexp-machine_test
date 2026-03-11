@@ -1,4 +1,8 @@
+import sys
 import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 os.environ["POLICY_CONFIG_PATH"] = "config/policy.yaml"
 os.environ["PERSONA_CONFIG_PATH"] = "config/personas.json"
 os.environ["REDIS_ENABLED"] = "false"
@@ -38,16 +42,21 @@ def reward_service(cache, persona_service, engine, policy) -> RewardService:
 
 @pytest_asyncio.fixture
 async def client():
-    # FIX: LifespanManager triggers FastAPI startup so app.state is populated
     app = create_app()
     async with LifespanManager(app):
         async with AsyncClient(transport=ASGITransport(app=app),
                                base_url="http://test") as ac:
             yield ac
 
+
 def make_payload(**overrides) -> dict:
-    base = {"txn_id": "txn_test_001", "user_id": "user_001",
-            "merchant_id": "merchant_A", "amount": 500.0,
-            "txn_type": "purchase", "ts": "2024-06-15T10:00:00Z"}
+    base = {
+        "txn_id": "txn_test_001",
+        "user_id": "user_001",
+        "merchant_id": "merchant_A",
+        "amount": 500.0,
+        "txn_type": "purchase",
+        "ts": "2024-06-15T10:00:00Z",
+    }
     base.update(overrides)
     return base
